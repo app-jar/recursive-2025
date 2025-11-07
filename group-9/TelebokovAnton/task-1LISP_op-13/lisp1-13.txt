@@ -1,0 +1,17 @@
+;;13. Сгенерировать все сочетания без повторений из N по К.
+
+(defun combinations (n k)
+  "сочетания без повторений из N по K"
+  (labels ((comb-helper (start current-comb)
+             (cond
+               ((= (length current-comb) k) 
+                (list current-comb))
+               ((> start n) 
+                nil)
+               (t 
+                (append
+                 (comb-helper (1+ start) 
+                             (append current-comb (list start)))
+                 (comb-helper (1+ start) 
+                             current-comb))))))
+    (comb-helper 1 '())))
