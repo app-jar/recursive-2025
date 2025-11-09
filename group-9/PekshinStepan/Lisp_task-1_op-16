@@ -1,0 +1,13 @@
+; Лисп задача 1 номер 16
+; Проверить, является ли дерево бинарным.
+
+(defun placements-with-repetition (n k)
+  "Генерирует все размещения с повторениями из N по K."
+  (if (= k 0)
+      (list nil)
+      (loop for x from 1 to n append
+           (mapcar (lambda (tail) (cons x tail))
+                   (placements-with-repetition n (1- k))))))
+
+; пример
+(format t "~a~%" (placements-with-repetition 3 2))
