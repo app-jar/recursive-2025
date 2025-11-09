@@ -1,3 +1,4 @@
+% Номер 1 задача 19
 partial_sums(List, Sums) :-
     partial_sums(List, 0, Sums).
 
