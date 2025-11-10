@@ -1,0 +1,20 @@
+
+; Лисп задача 2 номер 4
+; Проверить, является ли дерево бинарным.
+
+(defun binary-tree-p (tree)
+  (if (null tree)
+      t  ; пустое дерево — бинарное
+      (let ((children (cdr tree)))  ; все элементы кроме значения
+        (and (<= (length children) 2)
+             (every #'binary-tree-p children)))))
+
+
+; пример
+;; Бинарные деревья:
+(format t "Результат: ~a~%" (binary-tree-p '(1 (2) (3))))
+(format t "Результат: ~a~%" (binary-tree-p '(1 (2 (4) (5)) (3)))  )
+(format t "Результат: ~a~%" (binary-tree-p '(1 (2) (3 (6) (7)))))
+;; НЕ бинарные деревья:
+(format t "Результат: ~a~%" (binary-tree-p '(1 (2) (3) (4)))  )    
+(format t "Результат: ~a~%" (binary-tree-p '(1 (2 (3) (4) (5)))) )  
