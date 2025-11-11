@@ -1,64 +1,72 @@
 % Номер 2. Задача 16
-% Решение 3x3 системы вручную
-solve3(Matrix, D, [X, Y, Z]) :-
-    % Разворачиваем строки матрицы и правую часть
-    Matrix = [[A1, B1, C1],
-              [A2, B2, C2],
-              [A3, B3, C3]],
-    D = [D1, D2, D3],
+% Решение системы 3x3 
 
-    % === Проверяем первый ведущий элемент ===
-    ( A1 =:= 0 ->
-        % Если первый элемент 0, меняем строки
-        ( A2 =\= 0 ->
-            swap_rows([A1,B1,C1,D1],[A2,B2,C2,D2], R1, R2),
-            Matrix1 = [R1, R2, [A3,B3,C3,D3]]
-        ; A3 =\= 0 ->
-            swap_rows([A1,B1,C1,D1],[A3,B3,C3,D3], R1, R3),
-            Matrix1 = [R1, [A2,B2,C2,D2], R3]
-        ; writeln('Ошибка: первый столбец полностью нулевой!'), !, fail
+solve3(Matrix, D, Result) :-
+    % Распаковываем матрицу и правые части
+    Matrix = [[A1,B1,C1],[A2,B2,C2],[A3,B3,C3]],
+    D = [D1,D2,D3],
+    Row1 = [A1,B1,C1,D1],
+    Row2 = [A2,B2,C2,D2],
+    Row3 = [A3,B3,C3,D3],
+
+    % --- Прямой ход ---
+    pivot(Row1, Row2, Row3, R1,R2,R3),
+    forward_elimination(R1,R2,R3,R1f,R2f,R3f),
+
+    % --- Проверка на несовместность / бесконечно много решений ---
+    check_consistency(R1f,R2f,R3f,Result0),
+    ( Result0 \= unknown -> Result = Result0
+    ; back_substitution(R1f,R2f,R3f,Result)
+    ).
+
+% --- Пивотинг: перестановка строк, если ведущий элемент ноль ---
+pivot(R1,R2,R3,R1o,R2o,R3o) :-
+    ( nth0(0,R1,0) ->
+        ( nth0(0,R2,V2), V2 \= 0 ->
+            swap(R1,R2,R2o,R1o), R3o = R3, R2o = R2o
+        ; nth0(0,R3,V3), V3 \= 0 ->
+            swap(R1,R3,R3o,R1o), R2o = R2, R3o = R3o
+        ; R1o = R1, R2o = R2, R3o = R3  % все нули
         )
-    ; Matrix1 = [[A1,B1,C1,D1],[A2,B2,C2,D2],[A3,B3,C3,D3]]
-    ),
+    ; R1o = R1, R2o = R2, R3o = R3
+    ).
 
-    % === Прямой ход ===
-    Matrix1 = [[A1_,B1_,C1_,D1_],
-               [A2_,B2_,C2_,D2_],
-               [A3_,B3_,C3_,D3_]],
+swap([A,B,C,D],[E,F,G,H],[E,F,G,H],[A,B,C,D]).
 
-    % Обнуляем под первым элементом
-    F2 is A2_/A1_, F3 is A3_/A1_,
-    B2p is B2_ - F2*B1_, C2p is C2_ - F2*C1_, D2p is D2_ - F2*D1_,
-    B3p is B3_ - F3*B1_, C3p is C3_ - F3*C1_, D3p is D3_ - F3*D1_,
+% --- Прямой ход (обнуление под диагональю) ---
+forward_elimination([A1,B1,C1,D1],[A2,B2,C2,D2],[A3,B3,C3,D3],
+                    [A1,B1,C1,D1],[A2p,B2p,C2p,D2p],[A3p,B3p,C3p,D3p]) :-
 
-    % Проверяем второй ведущий элемент
-    ( B2p =:= 0 ->
-        ( B3p =\= 0 ->
-            swap_rows([B2p,C2p,D2p],[B3p,C3p,D3p], R2, R3),
-            [B2p_,C2p_,D2p_] = R2,
-            [B3p_,C3p_,D3p_] = R3
-        ; writeln('Ошибка: вырожденная система!'), !, fail
+    (A1 =:= 0 -> fail ; true),
+    F2 is A2/A1, F3 is A3/A1,
+    B2p is B2 - F2*B1, C2p is C2 - F2*C1, D2p is D2 - F2*D1,
+    B3p is B3 - F3*B1, C3p is C3 - F3*C1, D3p is D3 - F3*D1,
+
+    (B2p =:= 0 -> 
+        (B3p \= 0 -> 
+            swap([B2p,C2p,D2p],[B3p,C3p,D3p],[B3p,C3p,D3p],[B2p,C2p,D2p])
+        ; true
         )
-    ; B2p_ = B2p, C2p_ = C2p, D2p_ = D2p,
-      B3p_ = B3p, C3p_ = C3p, D3p_ = D3p
-    ),
-
-    % Обнуляем под вторым элементом
-    F is B3p_/B2p_,
-    C3pp is C3p_ - F*C2p_,
-    D3pp is D3p_ - F*D2p_,
-
-    % Проверяем третий ведущий элемент
-    ( C3pp =:= 0 ->
-        writeln('Ошибка: последний ведущий элемент равен 0, система вырождена!'), !, fail
     ; true
     ),
+    F is B3p/B2p,
+    C3p is C3p - F*C2p,
+    D3p is D3p - F*D2p.
 
-    % === Обратный ход ===
-    Z is D3pp / C3pp,
-    Y is (D2p_ - C2p_*Z) / B2p_,
-    X is (D1_ - B1_*Y - C1_*Z) / A1_.
+% --- Проверка на несовместность / бесконечные решения ---
+check_consistency(R1,R2,R3,Result) :-
+    ( zero_row(R1) -> (R1=[_,_,_,D], D \= 0 -> Result = error(inconsistent) ; true) ; true ),
+    ( zero_row(R2) -> (R2=[_,_,_,D], D \= 0 -> Result = error(inconsistent) ; true) ; true ),
+    ( zero_row(R3) -> (R3=[_,_,_,D], D \= 0 -> Result = error(inconsistent) ; true) ; true ),
+    ( rank3(R1,R2,R3) -> Result = unknown ; Result = ok(infinite_solutions) ).
 
-% --- Вспомогательный предикат для перестановки строк ---
-swap_rows(Row1, Row2, Row2, Row1).
+zero_row([A,B,C,_D]) :- A =:= 0, B =:= 0, C =:= 0.
 
+% Для 3x3 считаем ранг = 3, если диагональ не нулевая
+rank3([A1,_,_,_],[_,B2,_,_],[_,_,C3,_]) :- A1 =\= 0, B2 =\= 0, C3 =\= 0.
+
+% --- Обратный ход ---
+back_substitution([A1,B1,C1,D1],[_,B2,C2,D2],[_,_,C3,D3],[X,Y,Z]) :-
+    Z is D3/C3,
+    Y is (D2 - C2*Z)/B2,
+    X is (D1 - B1*Y - C1*Z)/A1.
