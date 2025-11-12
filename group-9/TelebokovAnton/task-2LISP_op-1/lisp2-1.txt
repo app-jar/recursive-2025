@@ -1,0 +1,21 @@
+;;1. Является ли один список перестановкой элементов другого списка, учитывая сколько раз встретился каждый из элементов.
+
+(defun multiset-equal-p (list1 list2 &key (test #'eql))
+  "проверяем, что мультимножества list1 и list2 равны"
+  (let ((counts1 (make-hash-table :test test))
+        (counts2 (make-hash-table :test test)))
+    
+    ;;подсчитываем элементы в первом списке
+    (dolist (x list1)
+      (incf (gethash x counts1 0)))
+    
+    ;;подсчитываем элементы во втором списке
+    (dolist (x list2)
+      (incf (gethash x counts2 0)))
+    
+    ;;проверяем совпадение счетчиков
+    (and (= (hash-table-count counts1) (hash-table-count counts2))
+         (loop for key being each hash-key of counts1
+               always (let ((count1 (gethash key counts1))
+                            (count2 (gethash key counts2 0)))
+                        (= count1 count2))))))
