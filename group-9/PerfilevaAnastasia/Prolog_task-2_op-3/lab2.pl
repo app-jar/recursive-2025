@@ -4,6 +4,10 @@ pairs_with(_, [], []).
 pairs_with(X, [Y|Ys], [(X,Y)|Rest]) :-
     pairs_with(X, Ys, Rest).
 
+append([], L, L).
+append([H|T], L2, [H|R]) :-
+    append(T, L2, R).
+
 % декартово произведение двух списков
 cartesian_product([], _, []).
 cartesian_product([X|Xs], Ys, Result) :-
