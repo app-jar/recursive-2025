@@ -1,0 +1,66 @@
+(defun multiply-polynomials (poly1 poly2)
+  "Умножение двух многочленов, заданных списками коэффициентов"
+  (let* ((len1 (length poly1))
+         (len2 (length poly2))
+         (result-len (+ len1 len2 -1))
+         (result (make-list result-len :initial-element 0)))
+    
+    (dotimes (i len1)
+      (dotimes (j len2)
+        (let ((coeff (* (nth i poly1) (nth j poly2)))
+              (pos (+ i j)))
+          (setf (nth pos result) (+ (nth pos result) coeff)))))
+    
+    result))
+
+(defun print-polynomial (poly)
+  "Вывод многочлена"
+  (let ((terms '())
+        (first-term t))
+    (loop for i from 0
+          for coeff in poly
+          when (not (zerop coeff))
+          do (cond
+              ((zerop i) (push (format nil "~a" coeff) terms))
+              ((= i 1) (push (format nil "~a*x" coeff) terms))
+              (t (push (format nil "~a*x^~a" coeff i) terms))))
+    
+    (if terms
+        (format t "~{~a~^ + ~}~%" (reverse terms))
+        (format t "0~%"))))
+
+(let ((p1 '(1 2 3))   ; 1 + 2x + 3x²
+      (p2 '(2 1)))    ; 2 + x
+  
+  (format t "Первый многочлен: ")
+  (print-polynomial p1)
+  
+  (format t "Второй многочлен: ")
+  (print-polynomial p2)
+  
+  (format t "Результат умножения: ")
+  (print-polynomial (multiply-polynomials p1 p2)))
+
+(let ((p1 '(1 1))     ; x + 1
+      (p2 '(1 -1)))   ; x - 1
+  
+  (format t "Первый многочлен: ")
+  (print-polynomial p1)
+  
+  (format t "Второй многочлен: ")
+  (print-polynomial p2)
+  
+  (format t "Результат умножения: ")
+  (print-polynomial (multiply-polynomials p1 p2)))
+
+(let ((p1 '(1 3 2))   ; 2x² + 3x + 1
+      (p2 '(2 1)))    ; x + 2
+  
+  (format t "Первый многочлен: ")
+  (print-polynomial p1)
+  
+  (format t "Второй многочлен: ")
+  (print-polynomial p2)
+  
+  (format t "Результат умножения: ")
+  (print-polynomial (multiply-polynomials p1 p2)))
