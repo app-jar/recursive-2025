@@ -1,0 +1,46 @@
+(defun gcd-euclid (a b)
+  "Нахождение НОД двух чисел с помощью алгоритма Евклида"
+  (when (and (zerop a) (zerop b))
+    (error "Оба числа не могут быть нулевыми"))
+  
+  (let ((a (abs a))
+        (b (abs b)))
+    
+    ;; Алгоритм Евклида
+    (do ((x a y)
+         (y b (mod x y)))
+        ((zerop y) x))))
+
+(defun print-gcd (a b)
+  "Вывод процесса нахождения НОД"
+  (format t "~%Нахождение НОД(~a, ~a):~%" a b)
+  
+  (let ((steps '())
+        (x (abs a))
+        (y (abs b)))
+    
+    ;; Записываем шаги алгоритма
+    (do ()
+        ((zerop y))
+      (let ((quotient (floor x y))
+            (remainder (mod x y)))
+        (push (list x y quotient remainder) steps)
+        (setf x y)
+        (setf y remainder)))
+    
+    ;; Выводим шаги
+    (format t "Алгоритм Евклида:~%")
+    (loop for step in (reverse steps)
+          for i from 1
+          do (destructuring-bind (dividend divisor quotient remainder) step
+               (format t "Шаг ~a: ~a = ~a × ~a + ~a~%" 
+                       i dividend divisor quotient remainder)))
+    
+    (let ((gcd (gcd-euclid a b)))
+      (format t "~%НОД(~a, ~a) = ~a~%" a b gcd)
+      gcd)))
+
+;; Примеры использования:
+(print-gcd 48 18)
+(print-gcd 1071 462)
+(print-gcd 56 98)
