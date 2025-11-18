@@ -1,0 +1,67 @@
+(defun long-division (dividend divisor)
+  (when (zerop divisor)
+    (error "Деление на ноль невозможно"))
+  
+  (let* ((dividend-abs (abs dividend))
+         (divisor-abs (abs divisor))
+         (negative-result (not (eq (> dividend 0) (> divisor 0))))
+         (quotient 0)
+         (remainder 0)
+         (steps '()))
+    
+    (let ((dividend-str (write-to-string dividend-abs)))
+      (dotimes (i (length dividend-str))
+        (let* ((current-digit (parse-integer (string (char dividend-str i))))
+               (current-number (+ (* remainder 10) current-digit)))
+          
+          (if (< current-number divisor-abs)
+            (progn
+              (setf remainder current-number)
+              (push (list current-number 0 current-number) steps))
+            (let ((q (floor current-number divisor-abs))
+                  (product (* divisor-abs (floor current-number divisor-abs))))
+              
+              (setf quotient (+ (* quotient 10) q))
+              (setf remainder (- current-number product))
+              
+              (push (list current-number q product remainder) steps))))))
+    
+    (when negative-result
+      (setf quotient (- quotient)))
+    
+    (print-long-division dividend divisor quotient remainder steps)
+    
+    (values quotient remainder)))
+
+(defun print-long-division (dividend divisor quotient remainder steps)
+  (format t "~%Деление ~a на ~a:~%" dividend divisor)
+  (format t "~a │ ~a~%" dividend divisor)
+  (format t "~v@T───────~%" (+ (length (write-to-string dividend)) 2))
+  
+  (let ((steps (reverse steps))
+        (indent 0))
+    
+    (loop for step in steps
+          for i from 0
+          do (let ((current-number (first step))
+                   (q (second step))
+                   (product (third step))
+                   (current-remainder (fourth step)))
+               
+               (when (> q 0)
+                 (format t "~v@T~a~%" indent product)
+                 (format t "~v@T───~%" indent)
+                 (format t "~v@T~a~%" indent current-number)
+                 
+                 (incf indent 2)
+                 
+                 (when current-remainder
+                   (format t "~v@T~a~%" indent current-remainder))))))
+  
+  (format t "~%Результат: ~a~%" quotient)
+  (format t "Остаток: ~a~%" remainder))
+
+
+(long-division 789 23)
+(format t "~%")
+(long-division 100 25)
