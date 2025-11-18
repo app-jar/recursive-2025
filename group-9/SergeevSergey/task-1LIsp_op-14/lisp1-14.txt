@@ -1,0 +1,44 @@
+;;14. Сгенерировать все размещения без повторений из N по К.
+(defun generate-placements (n k)
+  "Генерация всех размещений без повторений из N по K"
+  (if (or (< n k) (< n 1) (< k 1))
+      nil
+      (generate-placements-helper n k '() '())))
+
+(defun generate-placements-helper (n k current result)
+  "Вспомогательная функция для генерации размещений"
+  (cond
+    ;; Если набрали нужное количество элементов - добавляем в результат
+    ((= (length current) k)
+     (cons (reverse current) result))
+    
+    ;; Рекурсивно генерируем размещения
+    (t
+     (let ((new-result result))
+       (loop for i from 1 to n do
+         (unless (member i current)
+           (setf new-result 
+                 (generate-placements-helper n k (cons i current) new-result))))
+       new-result))))
+
+(defun print-placements (placements)
+  "Вывод всех размещений"
+  (format t "Всего размещений: ~a~%" (length placements))
+  (loop for placement in placements
+        for i from 1 do
+        (format t "~2a: ~a~%" i placement))
+  (terpri))
+
+;; Примеры использования:
+
+(format t "Размещения из 3 по 2:~%")
+(print-placements (generate-placements 3 2))
+
+(format t "Размещения из 4 по 1:~%")
+(print-placements (generate-placements 4 1))
+
+(format t "Размещения из 5 по 3:~%")
+(print-placements (generate-placements 5 3))
+
+(format t "Некорректные параметры (из 2 по 3):~%")
+(print-placements (generate-placements 2 3))
