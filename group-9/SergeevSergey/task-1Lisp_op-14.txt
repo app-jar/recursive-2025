@@ -1,0 +1,72 @@
+ ;; 14. Сгенерировать все размещения без повторений из N по K
+
+(defun generate-arrangements (n k)
+  "Генерация всех размещений без повторений из N элементов по K"
+  (when (or (< n 0) (< k 0) (> k n))
+    (error "Некорректные параметры: N и K должны быть неотрицательными, K <= N"))
+  
+  (let ((elements (loop for i from 1 to n collect i)))
+    (arrangements elements k)))
+
+(defun arrangements (lst k)
+  "Рекурсивная генерация размещений"
+  (cond
+    ((zerop k) '(()))  ;; Размещение по 0 элементов - пустой список
+    ((null lst) '())   ;; Если список пуст - нет размещений
+    (t
+     ;; Для КАЖДОГО элемента ставим его на первое место и добавляем все размещения из оставшихся
+     (loop for element in lst
+           append (mapcar (lambda (arr) (cons element arr))
+                         (arrangements (remove element lst) (1- k)))))))
+
+(defun print-arrangements (n k)
+  "Вывод всех размещений из N по K с подробными шагами"
+  (format t "~%Генерация всех размещений без повторений из ~a по ~a:~%" n k)
+  (format t "Формула: A(~a,~a) = ~a! / (~a - ~a)! = ~a~%" 
+          n k n n k (arrangements-count n k))
+  
+  (let ((all-arrangements (generate-arrangements n k))
+        (count 0))
+    
+    (format t "~%Все размещения:~%")
+    (dolist (arr all-arrangements)
+      (incf count)
+      (format t "~3a: ~a~%" count arr))
+    
+    (format t "~%Всего размещений: ~a~%" count)
+    all-arrangements))
+
+(defun arrangements-count (n k)
+  "Вычисление количества размещений по формуле A(n,k) = n!/(n-k)!"
+  (if (or (< n 0) (< k 0) (> k n))
+      0
+      (/ (factorial n) (factorial (- n k)))))
+
+(defun factorial (n)
+  "Вычисление факториала числа N"
+  (check-type n (integer 0 *))  ;; Проверка, что n неотрицательное целое
+  (if (<= n 1)
+      1
+      (* n (factorial (1- n)))))
+
+;; Дополнительные тестовые случаи
+(defun test-arrangements ()
+  "Тестирование функции на различных входных данных"
+  (format t "=== ТЕСТИРОВАНИЕ ГЕНЕРАЦИИ РАЗМЕЩЕНИЙ ===~%")
+  
+  (dolist (test-case '((3 2) (4 3) (5 1) (4 0) (2 2) (1 1) (0 0)))
+    (destructuring-bind (n k) test-case
+      (handler-case
+          (progn
+            (print-arrangements n k)
+            (format t "~%"))
+        (error (e) 
+          (format t "Ошибка для n=~a, k=~a: ~a~%~%" n k e))))))
+
+;; Примеры использования:
+(print-arrangements 3 2)
+(print-arrangements 4 3)
+(print-arrangements 5 1)
+
+;; Запуск тестов
+;; (test-arrangements)
