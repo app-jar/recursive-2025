@@ -1,24 +1,26 @@
+;;2. Найти наибольший общий делитель.
 (defun gcd-euclid (a b)
   "Нахождение НОД двух чисел с помощью алгоритма Евклида"
   (when (and (zerop a) (zerop b))
     (error "Оба числа не могут быть нулевыми"))
-  
+
   (let ((a (abs a))
         (b (abs b)))
     
-    ;; Алгоритм Евклида
-    (do ((x a y)
-         (y b (mod x y)))
-        ((zerop y) x))))
+    ;; Базовый случай - если одно из чисел 0, возвращаем другое
+    (if (zerop b)
+        a
+        ;; Алгоритм Евклида: gcd(a, b) = gcd(b, a mod b)
+        (gcd-euclid b (mod a b)))))
 
 (defun print-gcd (a b)
   "Вывод процесса нахождения НОД"
   (format t "~%Нахождение НОД(~a, ~a):~%" a b)
-  
+
   (let ((steps '())
         (x (abs a))
         (y (abs b)))
-    
+
     ;; Записываем шаги алгоритма
     (do ()
         ((zerop y))
@@ -27,15 +29,16 @@
         (push (list x y quotient remainder) steps)
         (setf x y)
         (setf y remainder)))
-    
-    ;; Выводим шаги
+
+    ;; Выводим шаги в правильном порядке
     (format t "Алгоритм Евклида:~%")
     (loop for step in (reverse steps)
           for i from 1
           do (destructuring-bind (dividend divisor quotient remainder) step
                (format t "Шаг ~a: ~a = ~a × ~a + ~a~%" 
-                       i dividend divisor quotient remainder)))
-    
+                       i dividend quotient divisor remainder)))
+
+    ;; Вычисляем и выводим результат
     (let ((gcd (gcd-euclid a b)))
       (format t "~%НОД(~a, ~a) = ~a~%" a b gcd)
       gcd)))
@@ -44,3 +47,4 @@
 (print-gcd 48 18)
 (print-gcd 1071 462)
 (print-gcd 56 98)
+(print-gcd 17 13)
