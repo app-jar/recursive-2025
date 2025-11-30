@@ -1,0 +1,49 @@
+;; нахождение минимального пути в  графе
+;;Новосельская Ирина Лаба 2 задача 13
+(defun dijkstra (graph start)
+  (let ((dist (make-hash-table))       ; расстояния до вершин
+        (prev (make-hash-table))       ; предыдущие вершины на пути
+        (queue (copy-list (mapcar #'car graph)))) ; очередь вершин для обработки
+    ;; Инициализация расстояний
+    (dolist (node queue)
+      (setf (gethash node dist) most-positive-fixnum)
+      (setf (gethash node prev) nil))
+    (setf (gethash start dist) 0)
+
+    (loop while queue do
+          (let* ((u (car (sort queue #'< :key (lambda (n) (gethash n dist)))))
+                 (u-dist (gethash u dist)))
+            (setf queue (remove u queue))
+            (when (< u-dist most-positive-fixnum)
+              (dolist (neighbor (cdr (assoc u graph)))
+                (let* ((v (car neighbor))
+                       (weight (cdr neighbor))
+                       (alt (+ u-dist weight)))
+                  (when (< alt (gethash v dist most-positive-fixnum))
+                    (setf (gethash dist v) alt)
+                    (setf (gethash prev v) u)))))))
+
+    ;; Возвращаем хеш-таблицы с расстояниями и путями
+    (values dist prev)))
+
+(defun reconstruct-path (prev start end)
+  "Восстановление пути из START в END по таблице PREV."
+  (labels ((rec (current path)
+             (if (or (null current) (equal current start))
+                 (cons start path)
+                 (rec (gethash current prev) (cons current path)))))
+    (rec end nil)))
+
+;; Пример использования
+(let* ((graph '((A . ((B . 2) (C . 5)))
+                (B . ((C . 1) (D . 4)))
+                (C . ((D . 2)))
+                (D . ()) ))
+       (start 'A)
+       (end 'D)
+       (results (multiple-value-list (dijkstra graph start)))
+       (dist (first results))
+       (prev (second results))
+       (path (reconstruct-path prev start end)))
+  (format t "Кратчайшее расстояние от ~a до ~a: ~a~%" start end (gethash end dist))
+  (format t "Путь: ~a~%" path))
