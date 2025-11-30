@@ -14,12 +14,12 @@ connected(X, Y) :- edge(Y, X).
 
 % reachable(+Start, +Visited, -Reachable)
 % Находит все вершины, достижимые из Start
+reachable(_, Visited, Visited).
+
 reachable(Start, Visited, Reachable) :-
     connected(Start, Next),
     \+ member(Next, Visited),
     reachable(Next, [Next|Visited], Reachable).
-
-reachable(_, Visited, Visited).
 
 % graph_connected/0 — проверка связности графа
 graph_connected :-
