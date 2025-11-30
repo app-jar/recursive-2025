@@ -1,0 +1,11 @@
+; 11. Сгенерировать список, I-ый элемент которого содержит сумму первых I элементов исходного списка.
+
+(defun cumulative-sum (lst &optional (acc 0))
+  "Возвращает список кумулятивных сумм"
+  (when lst
+    (let ((new-acc (+ acc (car lst))))
+      (cons new-acc (cumulative-sum (cdr lst) new-acc)))))
+
+(print "Исходный список: (1 2 3 4 5)")
+(print "Результат:")
+(print (cumulative-sum '(1 2 3 4 5)))
