@@ -1,5 +1,5 @@
-% sum_series(+List, +N, -Result)
-% Result — список сумм первых N элементов исходного списка List
+% Номер 1, Задача 17
+% Список сумм первых N элементов исходного списка List
 
 sum_series(List, N, Result) :-
     prefix(List, N, Prefix),
