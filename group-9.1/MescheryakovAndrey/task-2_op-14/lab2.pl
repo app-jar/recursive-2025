@@ -14,7 +14,8 @@ connected(X, Y) :- edge(Y, X).
 
 % reachable(+Start, +Visited, -Reachable)
 % Находит все вершины, достижимые из Start
-reachable(_, Visited, Visited).
+reachable(Start, Visited, Visited) :-
+    \+ (connected(Start, Next), \+ member(Next, Visited)).
 
 reachable(Start, Visited, Reachable) :-
     connected(Start, Next),
@@ -24,8 +25,8 @@ reachable(Start, Visited, Reachable) :-
 % graph_connected/0 — проверка связности графа
 graph_connected :-
     findall(V, (edge(V, _); edge(_, V)), Vertices0),
-    sort(Vertices0, Vertices),          % список всех вершин без повторов
-    Vertices = [Start|_],               % возьмём первую как начальную
+    sort(Vertices0, Vertices),
+    Vertices = [Start|_],
     reachable(Start, [Start], Reachable),
     sort(Reachable, ReachableSorted),
     ReachableSorted = Vertices,
@@ -33,7 +34,3 @@ graph_connected :-
 
 graph_connected :-
     write('Граф не связный').
-
-/** <examples>
-?- graph_connected.
-*/
