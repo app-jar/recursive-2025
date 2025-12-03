@@ -1,0 +1,21 @@
+;; Файл: sum-decomposition.lisp
+;; Проверка, является ли список разложением числа в виде суммы
+
+;; Основная функция
+(defun sum-decomposition (target-number numbers-list)
+  "Проверяет, равна ли сумма элементов списка numbers-list числу target-number"
+  (cond
+    ((null numbers-list) (= target-number 0))  ; Пустой список = сумма 0
+    (t (= target-number (apply #'+ numbers-list)))))  ; Суммируем все элементы
+
+;; Тестирующая функция
+(defun test ()
+  (format t "Тест 1: 10 = (3 4 3)? ~a~%" (sum-decomposition 10 '(3 4 3)))   ; T
+  (format t "Тест 2: 10 = (1 2 3)? ~a~%" (sum-decomposition 10 '(1 2 3)))   ; NIL
+  (format t "Тест 3: 0 = ()? ~a~%" (sum-decomposition 0 '()))               ; T
+  (format t "Тест 4: 5 = (2 3)? ~a~%" (sum-decomposition 5 '(2 3)))         ; T
+  (format t "Тест 5: 7 = (3 3)? ~a~%" (sum-decomposition 7 '(3 3)))         ; NIL
+  (format t "Тест 6: 15 = (5 5 5)? ~a~%" (sum-decomposition 15 '(5 5 5))))  ; T
+
+;; Запуск тестов
+(test) 
