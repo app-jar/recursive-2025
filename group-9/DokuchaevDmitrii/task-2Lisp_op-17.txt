@@ -1,0 +1,49 @@
+;; Реализация расстояния Левенштейна на Lisp
+(defun levenshtein-distance (s1 s2)
+  "Вычисляет расстояние Левенштейна между двумя строками"
+  (let* ((n (length s1))
+         (m (length s2))
+         (dp (make-array (list (1+ n) (1+ m)) :initial-element 0)))
+    
+    ;; Инициализация
+    (dotimes (i (1+ n))
+      (setf (aref dp i 0) i))
+    (dotimes (j (1+ m))
+      (setf (aref dp 0 j) j))
+    
+    ;; Заполнение матрицы
+    (dotimes (i n)
+      (dotimes (j m)
+        (let ((cost (if (char-equal (char s1 i) (char s2 j)) 0 1)))
+          (setf (aref dp (1+ i) (1+ j))
+                (min 
+                 (1+ (aref dp i (1+ j)))
+                 (1+ (aref dp (1+ i) j))
+                 (+ (aref dp i j) cost))))))
+    
+    ;; Результат
+    (aref dp n m)))
+
+;; Простая рекурсивная версия
+(defun levenshtein-simple (a b)
+  (cond
+    ((string= a "") (length b))
+    ((string= b "") (length a))
+    ((char= (char a 0) (char b 0))
+     (levenshtein-simple (subseq a 1) (subseq b 1)))
+    (t (1+ (min 
+            (levenshtein-simple (subseq a 1) b)
+            (levenshtein-simple a (subseq b 1))
+            (levenshtein-simple (subseq a 1) (subseq b 1)))))))
+
+;; Тесты
+(defun test-levenshtein ()
+  (format t "Тест 1: 'кот' 'кот' = ~a~%" (levenshtein-distance "кот" "кот"))
+  (format t "Тест 2: 'кот' 'кит' = ~a~%" (levenshtein-distance "кот" "кит"))
+  (format t "Тест 3: 'кот' 'коты' = ~a~%" (levenshtein-distance "кот" "коты"))
+  (format t "Тест 4: 'кот' '' = ~a~%" (levenshtein-distance "кот" ""))
+  (format t "Тест 5: '' 'кот' = ~a~%" (levenshtein-distance "" "кот"))
+  (format t "Тест 6: 'cat' 'dog' = ~a~%" (levenshtein-distance "cat" "dog")))
+
+;; Запустить тесты
+(test-levenshtein) 
