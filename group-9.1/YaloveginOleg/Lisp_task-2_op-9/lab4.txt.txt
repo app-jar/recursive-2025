@@ -1,0 +1,24 @@
+; 9. По заданному дереву посчитать количество каждого из заданных элементов.
+
+(defun count-elements (tree elements)
+  "Считает количество каждого из заданных элементов в дереве"
+  (let ((counts (make-hash-table)))
+    ;; Рекурсивный обход дерева
+    (labels ((traverse (node)
+               (cond
+                 ((null node) nil)
+                 ((atom node)
+                  (when (member node elements)
+                    (incf (gethash node counts 0))))
+                 (t
+                  (traverse (car node))
+                  (traverse (cdr node))))))
+      (traverse tree)
+      ;; Возвращаем список пар (элемент . количество)
+      (loop for element in elements
+            collect (cons element (gethash element counts 0))))))
+
+(print "Дерево: (1 (2 3) (4 (1 2)) 5)")
+(print "Ищем элементы: (1 2 3)")
+(print "Результат:")
+(print (count-elements '(1 (2 3) (4 (1 2)) 5) '(1 2 3)))
