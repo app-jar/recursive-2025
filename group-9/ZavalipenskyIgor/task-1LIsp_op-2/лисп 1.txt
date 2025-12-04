@@ -1,0 +1,29 @@
+(defun gcd-rec (a b)
+  "Рекурсивное вычисление НОД по алгоритму Евклида"
+  (if (zerop b)
+      a
+      (gcd-rec b (mod a b))))
+
+(defun print-gcd (a b)
+  "Вывод результата НОД"
+  (format t "НОД(~a, ~a) = ~a~%" a b (gcd-rec a b)))
+
+;; ----- Примеры выполнения (как у тебя с многочленами) -----
+
+(let ((a 54)
+      (b 24))
+  (format t "Пример 1:~%")
+  (format t "Числа: ~a и ~a~%" a b)
+  (print-gcd a b))
+
+(let ((a 1071)
+      (b 462))
+  (format t "~%Пример 2:~%")
+  (format t "Числа: ~a и ~a~%" a b)
+  (print-gcd a b))
+
+(let ((a 17)
+      (b 31))
+  (format t "~%Пример 3:~%")
+  (format t "Числа: ~a и ~a~%" a b)
+  (print-gcd a b))
