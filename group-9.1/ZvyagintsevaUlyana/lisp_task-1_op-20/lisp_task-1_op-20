@@ -1,0 +1,36 @@
+(defun sorted-ascending-p (lst)
+  "Проверяет, отсортирован ли список в порядке неубывания"
+  (cond
+    ((or (null lst) (null (cdr lst))) t)
+    ((<= (car lst) (cadr lst))
+     (sorted-ascending-p (cdr lst)))
+    (t nil)))
+
+(defun sorted-descending-p (lst)
+  "Проверяет, отсортирован ли список в порядке невозрастания"
+  (cond
+    ((or (null lst) (null (cdr lst))) t)
+    ((>= (car lst) (cadr lst))
+     (sorted-descending-p (cdr lst)))
+    (t nil)))
+
+(defun is-sorted-array (lst)
+  "Проверяет, является ли список отсортированным массивом чисел"
+  (if (or (null lst) (null (cdr lst)))
+      t
+      (let ((first (car lst))
+            (second (cadr lst)))
+        (cond
+          ((< first second)
+           (sorted-ascending-p lst))
+          ((> first second)
+           (sorted-descending-p lst))
+          (t
+           (or (sorted-ascending-p lst) (sorted-descending-p lst)))))))
+
+
+(print(is-sorted-array '()))      
+(print(is-sorted-array '(5)))   
+(print(is-sorted-array '(1 2 3 10 5)))    
+(print(is-sorted-array '(5 4 3 2 1)))   
+(print(is-sorted-array '(1 2 2 3 4))) 
