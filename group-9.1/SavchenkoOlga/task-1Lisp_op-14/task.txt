@@ -1,0 +1,17 @@
+;;Вариант 14
+;;Сгенерировать все размещения без повторений из N по К.
+(defun permutations-n-k (n k)
+  "Генерирует все размещения без повторений из N по K"
+  (let ((elements (loop for i from 1 to n collect i)))
+    (permutations-helper elements k)))
+
+(defun permutations-helper (elements k)
+  "Вспомогательная функция для генерации размещений"
+  (cond
+    ((zerop k) '(nil))  ; базовый случай: размещение длины 0
+    ((null elements) nil)  ; нет элементов для размещения
+    (t
+     (loop for i from 0 below (length elements)
+           append (let* ((current (nth i elements))
+                         (remaining (remove current elements :count 1))
+                         (sub-permutations (permutations-helper remaining (1- k))))
