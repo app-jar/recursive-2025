@@ -1,0 +1,61 @@
+;;Lisp №2, задача 18
+;;Может ли указанное число быть получено из заданного массива чисел с
+;;помощью операций +,-,* и /. Каждое из исходных чисел может использоваться
+;;не более одного раза.
+
+(defun can-make-number (target numbers &optional (epsilon 0.000001))
+  "Проверяет, можно ли получить target из numbers с помощью +,-,*,/
+   Каждое число используется не более одного раза.
+   epsilon - точность сравнения для вещественных чисел."
+  
+  (labels ((almost-equal (a b)
+             "Сравнение с учетом погрешности"
+             (< (abs (- a b)) epsilon))
+           
+           (apply-operations (x y)
+             "Применяем все операции к x и y, возвращаем список результатов"
+             (let ((results (list (+ x y) (- x y) (* x y))))
+               ;; Деление только если y не ноль
+               (when (not (almost-equal y 0))
+                 (push (/ x y) results))
+               ;; Также x/y и y/x - разные операции
+               (when (not (almost-equal x 0))
+                 (push (/ y x) results))
+               results))
+           
+           (solve (nums)
+             "Рекурсивная проверка"
+             (cond
+               ;; Базовый случай: одно число
+               ((= (length nums) 1)
+                (almost-equal (first nums) target))
+               
+               ;; Перебираем все пары чисел
+               (t
+                (loop for i from 0 below (length nums) do
+                  (loop for j from 0 below (length nums) 
+                        when (/= i j) do
+                        (let ((x (nth i nums))
+                              (y (nth j nums))
+                              (other-nums (remove-nth (remove-nth nums i) (if (> j i) (1- j) j))))
+                          
+                          ;; Применяем все операции
+                          (dolist (result (apply-operations x y))
+                            (when (solve (cons result other-nums))
+                              (return-from can-make-number t))))))
+                nil))))
+    
+    ;; Запускаем рекурсию
+    (solve numbers)))
+
+;; Вспомогательная функция: удалить элемент по индексу
+(defun remove-nth (lst n)
+  "Удаляет n-й элемент из списка"
+  (if (or (null lst) (< n 0))
+      lst
+      (if (= n 0)
+          (cdr lst)
+          (cons (car lst) (remove-nth (cdr lst) (1- n))))))
+
+(print(can-make-number 7 '(1 1 1 1)))
+(print(can-make-number 24 '(1 2 3 4)))
