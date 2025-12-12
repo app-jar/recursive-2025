@@ -1,0 +1,38 @@
+% Пустое дерево - бинарное
+is_binary_tree(nil). 
+% Непустные деревья рассматриваем как левое и правое поддеревья
+is_binary_tree(tree(_, Left, Right)) :-
+    is_binary_tree(Left),
+    is_binary_tree(Right).
+
+% Обертка, которая возвращает true/false
+check_binary_tree(Tree, Result) :-
+    (is_binary_tree(Tree) ->
+        Result = true
+    ;
+        Result = false
+    ).
+
+% Тестовые деревья
+tree1(nil).
+
+tree2(tree(1, nil, nil)).
+
+tree3(tree(1, tree(2, nil, nil), tree(3, nil, nil))).
+
+tree4(tree(1,
+          tree(2,
+               tree(4, nil, nil),
+               tree(5, nil, nil)),
+          tree(3,
+               nil,
+               tree(6, nil, nil)))).
+
+% Тестовые НЕ деревья
+not_tree1(not_a_tree). 
+
+not_tree2([1, 2, 3]). 
+
+not_tree3(tree(1)).
+
+not_tree4(tree(1, tree(2), tree(3), tree(4))). 
