@@ -1,49 +1,81 @@
-;; нахождение минимального пути в  графе
-;;Новосельская Ирина Лаба 2 задача 13
-(defun dijkstra (graph start)
-  (let ((dist (make-hash-table))       ; расстояния до вершин
-        (prev (make-hash-table))       ; предыдущие вершины на пути
-        (queue (copy-list (mapcar #'car graph)))) ; очередь вершин для обработки
-    ;; Инициализация расстояний
-    (dolist (node queue)
-      (setf (gethash node dist) most-positive-fixnum)
-      (setf (gethash node prev) nil))
-    (setf (gethash start dist) 0)
+;; 13. Поиск кратчайшего пути в ориентированном графе (алгоритм Дейкстры)
+;;Новосельская Ирина
+;; Представление графа: список вида (вершина (сосед . вес) ...)
+(defparameter *network* 
+  '((A (B . 1) (C . 4))
+    (B (D . 6))
+    (C (D . 3))
+    (D))) ; D — тупиковая вершина
 
-    (loop while queue do
-          (let* ((u (car (sort queue #'< :key (lambda (n) (gethash n dist)))))
-                 (u-dist (gethash u dist)))
-            (setf queue (remove u queue))
-            (when (< u-dist most-positive-fixnum)
-              (dolist (neighbor (cdr (assoc u graph)))
-                (let* ((v (car neighbor))
-                       (weight (cdr neighbor))
-                       (alt (+ u-dist weight)))
-                  (when (< alt (gethash v dist most-positive-fixnum))
-                    (setf (gethash dist v) alt)
-                    (setf (gethash prev v) u)))))))
+;; Структура для приоритетной очереди: хранит список (приоритет . узел)
+(defstruct frontier items)
 
-    ;; Возвращаем хеш-таблицы с расстояниями и путями
-    (values dist prev)))
+;; Добавление узла в очередь с заданным приоритетом (меньший приоритет = выше в очереди)
+(defun frontier-enqueue (queue node cost)
+  (setf (frontier-items queue)
+        (sort (cons (cons cost node) (frontier-items queue))
+              #'< :key #'car)))
 
-(defun reconstruct-path (prev start end)
-  "Восстановление пути из START в END по таблице PREV."
-  (labels ((rec (current path)
-             (if (or (null current) (equal current start))
-                 (cons start path)
-                 (rec (gethash current prev) (cons current path)))))
-    (rec end nil)))
+;; Извлечение узла с минимальным приоритетом
+(defun frontier-dequeue (queue)
+  (let ((top (pop (frontier-items queue))))
+    (values (cdr top) (car top))))
 
-;; Пример использования
-(let* ((graph '((A . ((B . 2) (C . 5)))
-                (B . ((C . 1) (D . 4)))
-                (C . ((D . 2)))
-                (D . ()) ))
-       (start 'A)
-       (end 'D)
-       (results (multiple-value-list (dijkstra graph start)))
-       (dist (first results))
-       (prev (second results))
-       (path (reconstruct-path prev start end)))
-  (format t "Кратчайшее расстояние от ~a до ~a: ~a~%" start end (gethash end dist))
-  (format t "Путь: ~a~%" path))
+;; Проверка, пуста ли очередь
+(defun frontier-empty-p (queue)
+  (null (frontier-items queue)))
+
+;; Получение множества всех вершин графа
+(defun collect-vertices (g)
+  (let ((vertices '()))
+    (dolist (v-record g)
+      (push (first v-record) vertices)
+      (dolist (edge (rest v-record))
+        (push (car edge) vertices)))
+    (remove-duplicates vertices :test #'equal)))
+
+;; Основная функция: кратчайший путь от start до goal
+(defun shortest-path (g start goal)
+  (let ((distance (make-hash-table :test #'equal))
+        (predecessor (make-hash-table :test #'equal))
+        (seen (make-hash-table :test #'equal))
+        (agenda (make-frontier)))
+    
+    ;; Инициализация всех расстояний как "бесконечность"
+    (dolist (v (collect-vertices g))
+      (setf (gethash v distance) most-positive-fixnum)
+      (setf (gethash v predecessor) nil)
+      (setf (gethash v seen) nil))
+
+    ;; Начальная вершина
+    (setf (gethash start distance) 0)
+    (frontier-enqueue agenda start 0)
+
+    ;; Основной цикл Дейкстры
+    (loop while (not (frontier-empty-p agenda)) do
+          (multiple-value-bind (current curr-dist) (frontier-dequeue agenda)
+            ;; Только если текущее расстояние актуально и вершина ещё не обработана
+            (unless (or (gethash current seen)
+                        (> curr-dist (gethash current distance)))
+              (setf (gethash current seen) t)
+              ;; Перебираем исходящие рёбра из текущей вершины
+              (let ((edges (rest (find current g :key #'first :test #'equal))))
+                (dolist (edge edges)
+                  (let* ((neighbor (car edge))
+                         (weight (cdr edge))
+                         (alt-dist (+ curr-dist weight)))
+                    (when (< alt-dist (gethash neighbor distance))
+                      (setf (gethash neighbor distance) alt-dist)
+                      (setf (gethash neighbor predecessor) current)
+                      (frontier-enqueue agenda neighbor alt-dist))))))))
+
+    ;; Восстановление пути
+    (let ((path '())
+          (step goal))
+      (loop while step do
+            (push step path)
+            (setf step (gethash step predecessor)))
+      ;; Если путь не состоит только из цели — значит, путь существует
+      (if (> (length path) 1)
+          (cons (gethash goal distance) (nreverse path))
+          nil))))
