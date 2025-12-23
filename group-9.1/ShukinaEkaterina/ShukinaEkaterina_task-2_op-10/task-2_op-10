@@ -1,0 +1,51 @@
+(defun upper-triangular-p (matrix)
+  "Проверяет, является ли матрица верхнетреугольной."
+  (let ((n (array-dimension matrix 0)))
+    (loop for i from 1 below n do
+      (loop for j from 0 below (min i n) do
+        (when (not (zerop (aref matrix i j)))
+          (return-from upper-triangular-p nil))))
+    t))
+
+(defun print-result (matrix)
+  "Печатает матрицу и результат проверки."
+  (format t "Матрица:~%")
+  (let ((n (array-dimension matrix 0)))
+    (loop for i from 0 below n do
+      (loop for j from 0 below n do
+        (format t "~3d " (aref matrix i j)))
+      (format t "~%")))
+  (format t "Верхнетреугольная: ~a~%~%" (upper-triangular-p matrix)))
+
+;; Примеры использования
+(defun main ()
+  ;; Пример 1: Верхнетреугольная матрица 3x3
+  (let ((matrix1 (make-array '(3 3) :initial-contents
+                            '((1 2 3)
+                              (0 4 5)
+                              (0 0 6)))))
+    (print-result matrix1))
+  
+  ;; Пример 2: НЕ верхнетреугольная матрица 3x3
+  (let ((matrix2 (make-array '(3 3) :initial-contents
+                            '((1 2 3)
+                              (4 5 6)
+                              (7 8 9)))))
+    (print-result matrix2))
+  
+  ;; Пример 3: Верхнетреугольная матрица 4x4
+  (let ((matrix3 (make-array '(4 4) :initial-contents
+                            '((5 1 3 2)
+                              (0 4 2 1)
+                              (0 0 3 4)
+                              (0 0 0 1)))))
+    (print-result matrix3))
+  
+  ;; Пример 4: Матрица с нулями под диагональю (верхнетреугольная)
+  (let ((matrix4 (make-array '(2 2) :initial-contents
+                            '((1 2)
+                              (0 3)))))
+    (print-result matrix4)))
+
+;; Запуск программы
+(main)
