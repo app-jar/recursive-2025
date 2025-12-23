@@ -1,0 +1,135 @@
+
+;;  Номер 1 задание 12 . Найти корни уравнения P(x)=0, где P(x) – многочлен.
+;; coeffs - список коэффициентов от старшей степени к младшей
+(defun evaluate-polynomial (coeffs x)
+  "Вычисляет значение многочлена в точке x"
+  (let ((result 0)
+        (power (length coeffs)))
+    (dolist (coeff coeffs result)
+      (setq result (+ (* result x) coeff))
+      (decf power))))
+
+;; Метод бисекции для нахождения корня на интервале [a, b]
+(defun bisection-method (coeffs a b &key (tolerance 1e-6) (max-iterations 100))
+  "Находит корень уравнения на интервале [a, b] методом бисекции"
+  (let ((fa (evaluate-polynomial coeffs a))
+        (fb (evaluate-polynomial coeffs b)))
+    
+    ;; Проверка знаков на концах интервала
+    (if (>= (* fa fb) 0)
+        (progn
+          (format t "Ошибка: На концах интервала [~a, ~a] одинаковые знаки~%" a b)
+          (return-from bisection-method nil)))
+    
+    (let ((mid 0)
+          (fmid 0)
+          (iter 0))
+      
+      (loop while (and (< iter max-iterations)
+                       (> (- b a) tolerance))
+            do
+            (setq mid (/ (+ a b) 2.0))
+            (setq fmid (evaluate-polynomial coeffs mid))
+            
+            (if (= fmid 0)
+                (return))
+            
+            (if (> (* fa fmid) 0)
+                (setf a mid
+                      fa fmid)
+                (setf b mid
+                      fb fmid))
+            
+            (incf iter))
+      
+      (values (/ (+ a b) 2.0) iter))))
+
+;; Функция для поиска корней на заданном интервале с заданным шагом
+(defun find-roots (coeffs start end &key (step 0.5) (tolerance 1e-6))
+  "Находит корни многочлена на интервале [start, end]"
+  (let ((roots '())
+        (x start))
+    
+    ;; Проходим по интервалу с заданным шагом
+    (loop while (<= x end)
+          do
+          (let ((x-next (+ x step)))
+            (when (> x-next end)
+              (setq x-next end))
+            
+            (let ((fx (evaluate-polynomial coeffs x))
+                  (fx-next (evaluate-polynomial coeffs x-next)))
+              
+              ;; Если знаки разные, ищем корень методом бисекции
+              (when (<= (* fx fx-next) 0)
+                (multiple-value-bind (root iterations)
+                    (bisection-method coeffs x x-next :tolerance tolerance)
+                  (when root
+                    ;; Проверяем, что корень не был найден ранее
+                    (if (every (lambda (r) (> (abs (- root r)) tolerance)) roots)
+                        (push root roots)
+                        (format t "Корень ~a уже найден (пропущен)~%" root))))))
+            
+            (setq x x-next)))
+    
+    ;; Возвращаем отсортированный список корней
+    (sort roots #'<)))
+
+;; Функция для ввода коэффициентов с клавиатуры
+(defun input-polynomial ()
+  "Ввод коэффициентов многочлена с клавиватуры"
+  (format t "Введите степень многочлена: ")
+  (let ((degree (read)))
+    (format t "Введите коэффициенты (от старшей степени к младшей):~%")
+    (loop for i from 0 to degree
+          collect (progn
+                    (format t "Коэффициент при x^~a: " (- degree i))
+                    (read)))))
+
+;; Основная функция
+(defun main ()
+  "Основная функция программы"
+  (format t "~%========== Нахождение корней многочлена ==========~%~%")
+  
+  ;; Пример 1: Заранее заданный многочлен
+  (format t "Пример 1: x^2 - 3x + 2 = 0~%")
+  (let* ((coeffs1 '(1 -3 2))  ;; x^2 - 3x + 2
+         (roots1 (find-roots coeffs1 -10 10)))
+    (format t "Коэффициенты: ~a~%" coeffs1)
+    (format t "Корни: ~a~%~%" roots1))
+  
+  ;; Пример 2: Другой многочлен
+  (format t "Пример 2: x^2 - 4 = 0~%")
+  (let* ((coeffs2 '(1 0 -4))  ;; x^2 - 4
+         (roots2 (find-roots coeffs2 -10 10)))
+    (format t "Коэффициенты: ~a~%" coeffs2)
+    (format t "Корни: ~a~%~%" roots2))
+  
+  ;; Пример 3: Многочлен 3-й степени
+  (format t "Пример 3: x^3 - 6x^2 + 11x - 6 = 0~%")
+  (let* ((coeffs3 '(1 -6 11 -6))  ;; x^3 - 6x^2 + 11x - 6
+         (roots3 (find-roots coeffs3 -10 10)))
+    (format t "Коэффициенты: ~a~%" coeffs3)
+    (format t "Корни: ~a~%~%" roots3))
+  
+  ;; Возможность ввода пользователем
+  (format t "Хотите ввести свой многочлен? (y/n): ")
+  (let ((answer (read-line)))
+    (when (or (string-equal answer "y") (string-equal answer "да"))
+      (let* ((coeffs (input-polynomial))
+             (roots (find-roots coeeffs -10 10)))
+        (format t "~%Введенные коэффициенты: ~a~%" coeffs)
+        (format t "Найденные корни на интервале [-10, 10]: ~a~%" roots))))
+  
+  (format t "~%Программа завершена.~%"))
+
+;; Тестирование функции вычисления многочлена
+(defun test-evaluation ()
+  "Тестирование функции вычисления многочлена"
+  (format t "~%Тестирование вычисления многочлена:~%")
+  (let ((coeffs '(1 -3 2)))  ;; x^2 - 3x + 2
+    (format t "Многочлен: ~a~%" coeffs)
+    (format t "P(0) = ~a (ожидается 2)~%" (evaluate-polynomial coeffs 0))
+    (format t "P(1) = ~a (ожидается 0)~%" (evaluate-polynomial coeffs 1))
+    (format t "P(2) = ~a (ожидается 0)~%" (evaluate-polynomial coeffs 2))
+    (format t "P(3) = ~a (ожидается 2)~%" (evaluate-polynomial coeffs 3))))
