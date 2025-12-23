@@ -1,0 +1,15 @@
+;; Беленов 91 группа, лаба 3, задача 22: Подсчет вхождений элементов
+
+(defun count-occurrences (lst)
+    "Подсчитывает количество каждого уникального элемента"
+    (if (null lst)
+        nil ;; nil, если список пустой
+        (let* ((current (car lst)) ;; первый элемент
+            (count (count current lst)) ;; считаем количество ево вхождений
+            (rest (remove current lst))) ;; удаляем все вхождения элемента
+        (cons (cons current count)
+            (count-occurrences rest))))) ;; формируем ответ
+
+;; Тест
+(print (count-occurrences '(a b c b a b c c)))
+;; => ((A . 2) (B . 3) (C . 3))
