@@ -1,0 +1,53 @@
+(defun dfs (graph start visited steps)
+  "Рекурсивный обход графа в глубину.
+   graph — список (вершина (соседи...))
+   start — текущая вершина
+   visited — список посещённых вершин
+   steps — шаги обхода"
+  (if (member start visited)
+      (values visited steps)
+      (let ((new-visited (cons start visited)))
+        (push (format nil "Посещаем: ~a" start) steps)
+        (dolist (neighbor (rest (assoc start graph)))
+          (multiple-value-setq (new-visited steps)
+            (dfs graph neighbor new-visited steps)))
+        (values new-visited steps))))
+
+(defun graph-connected-p (graph)
+  "Проверяет, является ли граф связным."
+  (let* ((start (first (first graph)))
+         (visited '())
+         (steps '()))
+    (multiple-value-setq (visited steps)
+      (dfs graph start visited steps))
+    (print-graph-check graph visited steps)))
+
+(defun print-graph-check (graph visited steps)
+  "Красивый вывод результата проверки связности графа."
+  (format t "~%Проверка связности графа:~%")
+  (format t "Вершины графа: ~a~%" (mapcar #'first graph))
+  
+  (format t "~%Шаги обхода (DFS):~%")
+  (dolist (s (reverse steps))
+    (format t "~a~%" s))
+
+  (let ((all-vertices (mapcar #'first graph)))
+    (if (= (length visited) (length all-vertices))
+        (format t "~%Граф связный.~%")
+        (format t "~%Граф НЕ связный.~%"))))
+
+;; ----------- ПРИМЕРЫ (как у тебя в long-division) -----------
+
+(let ((graph '((a (b c))
+               (b (a d))
+               (c (a d))
+               (d (b c)))))
+  (format t "~%Пример 1: связный граф~%")
+  (graph-connected-p graph))
+
+(let ((graph '((a (b))
+               (b (a))
+               (c (d))
+               (d (c)))))
+  (format t "~%Пример 2: НЕ связный граф~%")
+  (graph-connected-p graph))
