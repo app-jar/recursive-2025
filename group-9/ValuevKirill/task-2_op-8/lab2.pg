@@ -1,0 +1,33 @@
+traverse(nil, []).
+traverse(tree(Left, Value, Right), List) :-
+    traverse(Left, L1),
+    traverse(Right, L2),
+    append(L1, [Value | L2], List).
+
+count_occurrences([], []).
+count_occurrences([H|T], [[H, Count]|Rest]) :-
+    count_same(H, T, Count1, Remaining),
+    Count is Count1 + 1,
+    count_occurrences(Remaining, Rest).
+
+count_same(_, [], 0, []).
+count_same(H, [H|T], Count, Rem) :-
+    count_same(H, T, Count1, Rem),
+    Count is Count1 + 1.
+count_same(H, [X|T], 0, [X|T]) :- X \= H.
+
+count_in_tree(Tree, Counts) :-
+    traverse(Tree, List),
+    msort(List, Sorted), 
+    count_occurrences(Sorted, Counts).
+
+sum_quantities([], 0).
+sum_quantities([[_|Q]|T], Sum) :- sum_quantities(T, Rest), Sum is Rest + Q.
+
+test_count :- 
+    Tree = tree(tree(nil,1,nil), 2, tree(nil,1,nil)),
+    count_in_tree(Tree, Counts),
+    sum_quantities(Counts, Total),
+    write('Общее количество всех встречаемых элементов: '), write(Total), nl.
+
+:- initialization(test_count).
