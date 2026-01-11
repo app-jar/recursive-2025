@@ -1,0 +1,23 @@
+Номер 2, вариант 12 
+Проверить, является ли матрица отсортированной (строки и столбцы отсортированы).
+
+;; Проверяет, отсортированы ли строки и столбцы матрицы (неубывание)
+(defun matrix-sorted-p (matrix)
+  (and (rows-sorted-p matrix)
+       (columns-sorted-p matrix)))
+
+;; Проверяет, отсортированы ли все строки (по возрастанию)
+(defun rows-sorted-p (matrix)
+  (every (lambda (row)
+           (loop for i from 0 below (1- (length row))
+                 always (<= (nth i row) (nth (1+ i) row))))
+         matrix))
+
+;; Проверяет, отсортированы ли все столбцы (по возрастанию)
+(defun columns-sorted-p (matrix)
+  (let ((num-rows (length matrix))
+        (num-cols (if matrix (length (first matrix)) 0)))
+    (loop for col from 0 below num-cols
+          always (loop for row from 0 below (1- num-rows)
+                       always (<= (nth col (nth row matrix))
+                                  (nth col (nth (1+ row) matrix)))))))
