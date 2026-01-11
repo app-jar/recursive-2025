@@ -1,1 +1,46 @@
+%Лабораторная работа 2, Минаков Евгений
 
+%18. Может ли указанное число быть получено из заданного массива чисел с
+%помощью операций +,-,* и /. Каждое из исходных чисел может использоваться
+%не более одного раза.
+
+% Основной предикат: проверяет, можно ли получить Target из List
+can_make(List, Target) :- expr(List, Target).
+
+% Базовый случай: список из одного числа — значение равно этому числу
+expr([X], X).
+
+% Рекурсивный случай: разделяем список на две непустые части с помощью my_append,
+expr(List, Value) :-
+    my_append(Left, Right, List),  
+    Left \= [],                    
+    Right \= [],                 
+    expr(Left, VL),               
+    expr(Right, VR),             
+    operation(VL, VR, Value).
+
+% Определение операций
+% Сложение 
+operation(VL, VR, Value) :- Value is VL + VR.
+% Вычитание
+operation(VL, VR, Value) :- Value is VL - VR.
+operation(VL, VR, Value) :- Value is VR - VL.
+% Умножение
+operation(VL, VR, Value) :- Value is VL * VR.
+% Деление (целочисленное, если делится без остатка)
+operation(VL, VR, Value) :- 
+    VR \= 0,                       
+    VL mod VR =:= 0,              
+    Value is VL // VR.            
+operation(VL, VR, Value) :- 
+    VL \= 0,                      
+    VR mod VL =:= 0,
+    Value is VR // VL.
+
+% Реализация append (my_append)
+my_append([], List, List).
+
+% Рекурсивный случай: берем голову первой части, добавляем к результату,
+% рекурсивно обрабатываем хвост
+my_append([Head | Tail], List, [Head | Result]) :-
+    my_append(Tail, List, Result).
